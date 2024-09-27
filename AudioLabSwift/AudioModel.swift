@@ -16,6 +16,21 @@ class AudioModel {
     var timeData:[Float]
     var fftData:[Float]
     
+    //FM2 a 20 long array
+    var equalizerData: [Float] {
+            var windowMaxValues = [Float](repeating: 0.0, count: 20)
+            let windowSize = fftData.count / 20
+            
+            for i in 0..<20 {
+                let start = i * windowSize
+                let end = start + windowSize
+                if end <= fftData.count {
+                    windowMaxValues[i] = fftData[start..<end].max() ?? 0.0
+                }
+            }
+            return windowMaxValues
+        }
+    
     // MARK: Public Methods
     init(buffer_size:Int) {
         BUFFER_SIZE = buffer_size
@@ -54,6 +69,17 @@ class AudioModel {
     func play(){
         self.audioManager?.play()
     }
+    
+    // New func of pausing the audio
+    func pauseAudio() {
+        self.audioManager?.pause()
+    }
+
+    // New func of playing the audio
+    func playAudio() {
+        self.audioManager?.play()
+    }
+
     
     // Here is an example function for getting the maximum frequency
     func getMaxFrequencyMagnitude() -> (Float,Float){
@@ -120,17 +146,18 @@ class AudioModel {
     private func runEveryInterval(){
         if inputBuffer != nil {
             // copy data to swift array
-            self.inputBuffer!.fetchFreshData(&timeData, withNumSamples: Int64(BUFFER_SIZE))
+            // self.inputBuffer!.fetchFreshData(&timeData, withNumSamples: Int64(BUFFER_SIZE))
+            
+            //FM2: from outputbuffer to get the data
+            self.outputBuffer!.fetchFreshData(&timeData, withNumSamples: Int64(BUFFER_SIZE))
             
             // now take FFT and display it
             fftHelper!.performForwardFFT(withData: &timeData,
                                          andCopydBMagnitudeToBuffer: &fftData)
             
-            
         }
     }
-    
-   
+
     
     //==========================================
     // MARK: Audiocard Callbacks
@@ -153,6 +180,7 @@ class AudioModel {
     }
     
     private func handleSpeakerQueryWithAudioFile(data:Optional<UnsafeMutablePointer<Float>>, numFrames:UInt32, numChannels: UInt32){
+        
         if let file = self.fileReader{
             
             // read from file, loaidng into data (a float pointer)
@@ -165,6 +193,9 @@ class AudioModel {
                                          withNumSamples: Int64(numFrames))
         }
     }
+    
+
+    
     
     //    _     _     _     _     _     _     _     _     _     _
     //   / \   / \   / \   / \   / \   / \   / \   / \   / \   /
