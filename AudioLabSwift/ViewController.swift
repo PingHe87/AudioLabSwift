@@ -24,6 +24,7 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        audio.viewController = self
         
         
         // add in graphs for display
@@ -51,12 +52,15 @@ class ViewController: UIViewController {
         audio.play()
         
         // run the loop for updating the graph peridocially
-        Timer.scheduledTimer(timeInterval: 0.05, target: self,
-            selector: #selector(self.updateGraph),
+//        Timer.scheduledTimer(timeInterval: 0.05, target: self,
+//            selector: #selector(self.updateGraph),
+//            userInfo: nil,
+//            repeats: true)
+        
+        Timer.scheduledTimer(timeInterval: 0.05, target: audio,
+            selector: #selector(audio.runEveryInterval),
             userInfo: nil,
             repeats: true)
-        
-        
 
        
     }

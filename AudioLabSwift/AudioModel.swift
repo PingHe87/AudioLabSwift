@@ -15,6 +15,7 @@ class AudioModel {
     private var BUFFER_SIZE:Int
     var timeData:[Float]
     var fftData:[Float]
+    weak var viewController: ViewController?
     
     //FM2 a 20 long array
     var equalizerData: [Float] {
@@ -143,7 +144,7 @@ class AudioModel {
     //==========================================
     // MARK: Model Callback Methods
     @objc
-    private func runEveryInterval(){
+    func runEveryInterval(){
         if inputBuffer != nil {
             // copy data to swift array
             // self.inputBuffer!.fetchFreshData(&timeData, withNumSamples: Int64(BUFFER_SIZE))
@@ -151,10 +152,15 @@ class AudioModel {
             //FM2: from outputbuffer to get the data
             self.outputBuffer!.fetchFreshData(&timeData, withNumSamples: Int64(BUFFER_SIZE))
             
+            print("Time Data after fetching from outputBuffer: \(timeData[0..<min(10, timeData.count)])")
+            
             // now take FFT and display it
             fftHelper!.performForwardFFT(withData: &timeData,
                                          andCopydBMagnitudeToBuffer: &fftData)
             
+            print("FFT Data after conversion: \(fftData[0..<min(10, fftData.count)])")
+            
+            viewController?.updateGraph()
         }
     }
 
@@ -191,7 +197,11 @@ class AudioModel {
             // set samples to output speaker buffer
             self.outputBuffer?.addNewFloatData(data,
                                          withNumSamples: Int64(numFrames))
+            print("Audio file retrieved data: \(data?.pointee ?? -1)")
+        } else {
+            print("Audio file reader not initialized")
         }
+        
     }
     
 
